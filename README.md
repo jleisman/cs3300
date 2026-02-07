@@ -1,7 +1,7 @@
 # CS3300 Group Project
 by Jared Abels, Syndeed Ayman, Lydia Easter, Joshua Leisman 
 
-Team "CS is our hobby"
+Team "CS is just our hobby"
 
 Intro to Software Engineering Group Project - Android App interface for ML mood model
 
