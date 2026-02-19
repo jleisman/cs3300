@@ -20,8 +20,11 @@ Maintainer will:
 [//]: # (This is the unreleased section. Put code changes that are currently in development here)
 ## [Unreleased]
 ### Added
+- testing for tenseflow lite
+- tenseflow lite ML model
 ### Changed
 ### Fixed
+- gitignore
 ### Removed
 ### Security
 
