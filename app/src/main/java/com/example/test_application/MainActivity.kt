@@ -17,4 +17,20 @@ class MainActivity : AppCompatActivity() {
             insets
         }
     }
+
+    // Something to try for sending images to the ML
+//    val inputStream = context.assets.open("test1.jpg")
+//    val bitmap = BitmapFactory.decodeStream(inputStream)
+
 }
+
+//import java.awt.Graphics2D
+//import java.awt.image.BufferedImage
+//
+//fun resizeImage(img: BufferedImage, newW: Int, newH: Int): BufferedImage {
+//    val resized = BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB)
+//    val g: Graphics2D = resized.createGraphics()
+//    g.drawImage(img, 0, 0, newW, newH, null)
+//    g.dispose()
+//    return resized
+//}
