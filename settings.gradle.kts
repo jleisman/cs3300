@@ -22,6 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "test_application"
+rootProject.name = "VibeVision"
 include(":app")
  

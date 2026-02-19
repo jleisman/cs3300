@@ -25,6 +25,11 @@ Maintainer will:
 ### Removed
 ### Security
 
+## [1.0.1] - 2026-02-17
+### Fixed
+- Gradle settings for Android environment
+- New documents
+
 ## [1.0.0] - 2026-02-12
 ### Added   
 - Initial Android app interface.
