@@ -8,18 +8,21 @@ import androidx.compose.material3.Surface
 import com.example.vibevision.feature.camera.CameraScreen
 
 
+
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
+            // If you have your own theme, wrap it here instead of MaterialTheme
             MaterialTheme {
                 Surface {
-                    CameraScreen(
-                        onCaptureClick = {
-                            // Later: hook this up to ImageCapture to take a photo
-                        }
-                    )
+                    // CameraScreen manages:
+                    // - Permission logic (including "Don't ask again" handling)
+                    // - Showing the CameraPreview when permission is granted
+                    // - Showing the proper fallback UI when not granted
+                    CameraScreen()
                 }
             }
         }
