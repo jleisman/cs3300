@@ -21,84 +21,122 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 @Composable
 fun CameraScreen() {
     val context = LocalContext.current
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val permission = Manifest.permission.CAMERA
 
-    // Track permission state
-    var hasCameraPermission by remember {
+    // If permission is currently granted
+    var hasPermission by remember {
         mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(context, permission) ==
+                    PackageManager.PERMISSION_GRANTED
         )
     }
 
-    // Permission launcher (requested ONCE on startup)
+    // This tracks how many times the user has denied the request.
+    var denialCount by remember { mutableIntStateOf(0) }
+
+    // Permission launcher
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        hasCameraPermission = granted
+    ) {
+        granted ->
+        // if camera permission denied, increment counter so correct screen is shown
+        if (!granted) {
+            denialCount += 1
+        }
+        hasPermission = granted
     }
 
-    // Ask for permission immediately on first launch
+    // Request permission automatically on first app launch
     LaunchedEffect(Unit) {
-        if (!hasCameraPermission) {
-            launcher.launch(Manifest.permission.CAMERA)
+        if (!hasPermission && denialCount == 0) {
+            launcher.launch(permission)
         }
     }
 
-    // Observe when returning from Settings
+    // When returning from settings, re-check permission
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                val grantedNow = ContextCompat.checkSelfPermission(
+                hasPermission = ContextCompat.checkSelfPermission(
                     context,
-                    Manifest.permission.CAMERA
+                    permission
                 ) == PackageManager.PERMISSION_GRANTED
-
-                hasCameraPermission = grantedNow
             }
         }
 
+        // for entire lifetime of app
         lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
-    // UI based on camera permission
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        if (hasCameraPermission) {
-            CameraPreview(
-                modifier = Modifier.fillMaxSize(),
-                cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
-            )
-        } else {
-            PermissionSettingsUI(
-                onOpenSettings = {
-                    val intent = Intent(
-                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.fromParts("package", context.packageName, null)
-                    )
-                    context.startActivity(intent)
-                }
-            )
+    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+
+        when {
+            // CASE 1 — Permission granted so show camera preview
+            hasPermission -> {
+                CameraPreview(
+                    modifier = Modifier.fillMaxSize(),
+                    cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+                )
+            }
+
+            // CASE 2 — After first denial so show button to try again
+            denialCount == 1 -> {
+                FirstDenyScreen(
+                    onRequestPermission = { launcher.launch(permission) }
+                )
+            }
+
+            // CASE 3 — After second denial so open settings
+            denialCount >= 2 -> {
+                PermanentDenyScreen(
+                    onOpenSettings = {
+                        val intent = Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", context.packageName, null)
+                        )
+                        context.startActivity(intent)
+                    }
+                )
+            }
         }
     }
 }
 
+// Screen shown after permissions dialog and allowed to ask permissions again
 @Composable
-fun PermissionSettingsUI(onOpenSettings: () -> Unit) {
+fun FirstDenyScreen(onRequestPermission: () -> Unit) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        Modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Camera permission is required to use this feature.")
+        Text("Camera permission is required to use this app.")
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = onRequestPermission) {
+            Text("Grant camera permission")
+        }
+    }
+}
+
+// Screen shown after asking twice and being denied. Send user to settings page
+@Composable
+fun PermanentDenyScreen(onOpenSettings: () -> Unit) {
+    Column(
+        Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Camera permission has been denied.\n This apps requires camera permissions." +
+                " \nEnable it in app settings.")
         Spacer(Modifier.height(16.dp))
         Button(onClick = onOpenSettings) {
             Text("Open app settings")
