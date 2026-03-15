@@ -20,13 +20,24 @@ Maintainer will:
 [//]: # (This is the unreleased section. Put code changes that are currently in development here)
 ## [Unreleased]
 ### Added
-- testing for tenseflow lite
-- tenseflow lite ML model
 ### Changed
 ### Fixed
-- gitignore
 ### Removed
 ### Security
+
+## [1.0.2] - 2026-03-15
+### Added
+- testing for tenseflow lite
+- tenseflow lite ML model
+- Preview of camera view
+- Interal saving of PNG files
+  - orientation checking and fixed for saved files
+  - cropped to 128x128
+### Changed
+- Gradle Settings
+- 
+### Fixed
+- gitignore
 
 ## [1.0.1] - 2026-02-17
 ### Fixed

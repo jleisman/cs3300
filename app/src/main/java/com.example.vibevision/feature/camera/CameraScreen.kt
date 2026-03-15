@@ -22,14 +22,25 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.launch
 
+// TODO: Split this file into CameraScreen and CameraPermission Screens files
+
+/**
+ * High-level Camera screen.
+ *
+ * Responsibilities:
+ * - Handle camera permission flow
+ * - Route UI to: CameraPreview or deny screens
+ * - (Next step): receive Bitmap from CameraPreview and save PNG or run ML
+ */
 @Composable
 fun CameraScreen() {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val permission = Manifest.permission.CAMERA
 
-    // If permission is currently granted
+    // Tracks whether the user currently has camera permission.
     var hasPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(context, permission) ==
@@ -37,29 +48,41 @@ fun CameraScreen() {
         )
     }
 
-    // This tracks how many times the user has denied the request.
+    // Tracks how many times the user denied the system permission dialog.
     var denialCount by remember { mutableIntStateOf(0) }
 
-    // Permission launcher
+    /**
+     * Permission launcher used when:
+     * - The app launches for the first time
+     * - The user taps "Grant Permission" on FirstDenyScreen
+     */
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) {
-        granted ->
-        // if camera permission denied, increment counter so correct screen is shown
+    ) { granted ->
         if (!granted) {
-            denialCount += 1
+            denialCount += 1 // increment denial count
         }
         hasPermission = granted
     }
 
-    // Request permission automatically on first app launch
+    /**
+     * On first launch, automatically request permission.
+     * (Only happens once because denialCount starts at 0.)
+     */
     LaunchedEffect(Unit) {
         if (!hasPermission && denialCount == 0) {
             launcher.launch(permission)
         }
     }
 
-    // When returning from settings, re-check permission
+    /**
+     * When the app returns from background → foreground, re-check permission.
+     *
+     * This covers the case where:
+     * - User denied twice
+     * - App sent them to Settings
+     * - They manually granted permission
+     */
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -70,32 +93,46 @@ fun CameraScreen() {
             }
         }
 
-        // for entire lifetime of app
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
-    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+    // ----------- MAIN UI ROUTING ----------- //
 
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
         when {
-            // CASE 1 — Permission granted so show camera preview
+            // CASE 1: permission granted → show actual camera feed
             hasPermission -> {
+
+                val saveScope = rememberCoroutineScope()
+
                 CameraPreview(
                     modifier = Modifier.fillMaxSize(),
-                    cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
+                    cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA,
+                    onFrameCaptured = { bitmap ->
+                        // Must run on background thread → we use coroutineScope
+                        saveScope.launch {
+                            val file = saveBitmapAsPng(context, bitmap)
+                            println("Saved PNG to: ${file.absolutePath}")
+
+                        }
+                    }
                 )
             }
 
-            // CASE 2 — After first denial so show button to try again
+            // CASE 2: permission denied once → allow user to retry
             denialCount == 1 -> {
                 FirstDenyScreen(
                     onRequestPermission = { launcher.launch(permission) }
                 )
             }
 
-            // CASE 3 — After second denial so open settings
+            // CASE 3: denied twice or more → direct user to system Settings
             denialCount >= 2 -> {
                 PermanentDenyScreen(
                     onOpenSettings = {
@@ -111,11 +148,16 @@ fun CameraScreen() {
     }
 }
 
-// Screen shown after permissions dialog and allowed to ask permissions again
+
+/**
+ * Screen shown after user's first permission denial.
+ */
 @Composable
 fun FirstDenyScreen(onRequestPermission: () -> Unit) {
     Column(
-        Modifier.fillMaxSize().padding(24.dp),
+        Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -127,19 +169,27 @@ fun FirstDenyScreen(onRequestPermission: () -> Unit) {
     }
 }
 
-// Screen shown after asking twice and being denied. Send user to settings page
+/**
+ * Screen shown after second denial.
+ * User must manually enable permission from Android Settings.
+ */
 @Composable
 fun PermanentDenyScreen(onOpenSettings: () -> Unit) {
     Column(
-        Modifier.fillMaxSize().padding(24.dp),
+        Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Camera permission has been denied.\n This apps requires camera permissions." +
-                " \nEnable it in app settings.")
+        Text(
+            "Camera permission has been denied.\n" +
+                    "This app requires camera permissions.\n" +
+                    "Enable it in Android settings."
+        )
         Spacer(Modifier.height(16.dp))
         Button(onClick = onOpenSettings) {
-            Text("Open app settings")
+            Text("Open App Settings")
         }
     }
 }
