@@ -20,6 +20,14 @@ Maintainer will:
 [//]: # (This is the unreleased section. Put code changes that are currently in development here)
 ## [Unreleased]
 ### Added
+### Changed
+### Fixed
+### Removed
+### Security
+
+
+## [1.0.3] - 2026-03-16
+### Added
 - Imported and implemented Hilt and KSP.
 - Created MyApp.kt.
 - Implemented Hilt into existing code.
@@ -27,7 +35,8 @@ Maintainer will:
 - Log printing for deleting files
 - Comments to all files in feature/camera package
 ### Changed
-### Fixed
+- name of project and package name to be more concise
+- changed from processing image to RGB to greyscale
 ### Removed
 - ImageSaveUtils.kt as all functionality now housed in ImageRepository.kt
 ### Security
