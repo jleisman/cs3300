@@ -1,4 +1,4 @@
-package com.example.vibevision
+package com.vibevision
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp

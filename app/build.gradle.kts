@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.vibevision"
+    namespace = "com.vibevision"
 
     compileSdk {
         version = release(36) {
@@ -15,7 +15,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.vibevision"
+        applicationId = "com.vibevision"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

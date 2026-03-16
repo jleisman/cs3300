@@ -1,4 +1,4 @@
-package com.example.vibevision.feature.camera
+package com.vibevision.feature.camera
 
 import android.Manifest
 import android.content.Intent

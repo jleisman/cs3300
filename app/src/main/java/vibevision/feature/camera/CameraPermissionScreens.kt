@@ -1,4 +1,4 @@
-package com.example.vibevision.feature.camera
+package com.vibevision.feature.camera
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button

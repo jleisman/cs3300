@@ -1,4 +1,4 @@
-package com.example.vibevision.ui.theme
+package com.vibevision.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
