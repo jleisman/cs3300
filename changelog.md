@@ -20,10 +20,20 @@ Maintainer will:
 [//]: # (This is the unreleased section. Put code changes that are currently in development here)
 ## [Unreleased]
 ### Added
+- Imported and implemented Hilt and KSP.
+- Created MyApp.kt.
+- Implemented Hilt into existing code.
+- Delete files after 1 minute or after success from ML (Whichever if first)
+- Log printing for deleting files
+- Comments to all files in feature/camera package
 ### Changed
 ### Fixed
 ### Removed
+- ImageSaveUtils.kt as all functionality now housed in ImageRepository.kt
 ### Security
+- Remove local.properties from Git history
+- Added caching to gradle.properties for faster build times
+
 
 ## [1.0.2] - 2026-03-15
 ### Added
