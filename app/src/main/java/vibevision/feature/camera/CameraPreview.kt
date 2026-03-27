@@ -64,6 +64,7 @@ fun CameraPreview(
                 )
                 // FIT_CENTER keeps the aspect ratio intact instead of stretching to fill
                 scaleType = PreviewView.ScaleType.FIT_CENTER
+                setBackgroundColor(android.graphics.Color.TRANSPARENT)
             }
 
             val previewUseCase = Preview.Builder()

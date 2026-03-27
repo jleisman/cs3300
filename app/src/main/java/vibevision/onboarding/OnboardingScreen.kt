@@ -59,7 +59,7 @@ fun OnboardingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0A0A0A))
+            .background(MaterialTheme.colorScheme.primary)
     ) {
         // HorizontalPager renders one page at a time and supports swipe gestures.
         // Each page index maps to a composable in the 'when' block below
