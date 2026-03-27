@@ -84,7 +84,7 @@ fun CameraScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.primary
     ) {
         when {
             // Permission granted - show live preview
