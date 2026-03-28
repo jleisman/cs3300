@@ -24,8 +24,13 @@ Maintainer will:
 - Intro screens for first time loading app
 ### Changed
 - App colors and theming
+  - New default colors and handling of dark and light mode
+- Reworked CameraScreen.kt to move initial camera permissions to be handled by intro screens
+- MainActivity.kt updated with new screens logic and theme logic
+- Centralized color codes from camera overlay to Color.kt
 ### Fixed
 ### Removed
+- Marked FaceAlignmentBox for deletion
 ### Security
 
 

@@ -10,7 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-
+import com.vibevision.ui.theme.*
 /*
  * Composables and helpers that render on top of the camera preview.
  *
@@ -47,6 +47,7 @@ fun EmotionOverlay(
  * The color is driven by colorForEmotion so it reacts to the current ML result.
  * The size and position are controlled by the caller via modifier.
  */
+// TODO: Remove FaceAlignmentBox after testing
 @Composable
 fun FaceAlignmentBox(
     color: Color,
@@ -68,12 +69,13 @@ fun FaceAlignmentBox(
  * Colors are chosen to be intuitive and distinct from each other at a glance.
  * Any unrecognized label defaults to white so the box remains visible.
  */
+// TODO: Map color forEmotion to different visual marker
 fun colorForEmotion(emotion: String): Color {
     return when (emotion.lowercase()) {
-        "happy"   -> Color(0xFFFFFF00)  // yellow
-        "angry"   -> Color(0xFFFF0000)  // red
-        "sad"     -> Color(0xFF2196F3)  // blue
-        "neutral" -> Color(0xFF00FF00)  // green
+        "happy"   -> HappyColor  // yellow
+        "angry"   -> AngryColor  // red
+        "sad"     -> SadColor  // blue
+        "neutral" -> NeutralColor  // green
         else      -> Color.White
     }
 }
