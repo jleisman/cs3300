@@ -109,15 +109,15 @@ fun CameraScreen(
                             .padding(start = 16.dp, top = 96.dp)
                     )
 
+// TODO: Remove FaceAlignementBox after testing
                     // Square crop — constrains the alignment box to the smaller screen dimension
                     val side = min(maxWidth, maxHeight)
-
-                    FaceAlignmentBox(
-                        color = colorForEmotion(emotion),
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(side)
-                    )
+//                    FaceAlignmentBox(
+//                        color = colorForEmotion(emotion),
+//                        modifier = Modifier
+//                            .align(Alignment.Center)
+//                            .size(side)
+//                    )
                 }
             }
 
