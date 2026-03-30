@@ -10,6 +10,13 @@ import java.io.FileInputStream
 import java.nio.channels.FileChannel
 import android.content.Context
 
+// add
+// aaptOptions{
+//     noCompress("tflite")
+// }
+// // TFLite File
+//    implementation("org.tensorflow:tensorflow-lite:2.17.0")
+
 fun preprocessImage(bitmap: Bitmap): ByteBuffer {
     // Resize to 128x128
     val resized = bitmap.scale(128, 128)
