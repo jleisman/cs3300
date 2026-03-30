@@ -12,6 +12,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.vibevision.ui.theme.DarkPrimary
+import com.vibevision.ui.theme.HackerColor
 import kotlinx.coroutines.launch
 
 /*
@@ -59,7 +62,7 @@ fun OnboardingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.primary)
+            .background(DarkPrimary)
     ) {
         // HorizontalPager renders one page at a time and supports swipe gestures.
         // Each page index maps to a composable in the 'when' block below
@@ -115,7 +118,7 @@ private fun WelcomePage(onNext: () -> Unit) {
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Bold,
             fontSize = 48.sp,
-            color = Color(0xFF00FF00),
+            color = HackerColor,
             textAlign = TextAlign.Center,
             lineHeight = 52.sp
         )
@@ -130,7 +133,7 @@ private fun WelcomePage(onNext: () -> Unit) {
             text = "Real-time emotion detection from your face.",
             fontFamily = FontFamily.Monospace,
             fontSize = 14.sp,
-            color = Color(0xFFCCCCCC),
+            color = colorScheme.secondary,
             textAlign = TextAlign.Center
         )
 
@@ -146,7 +149,7 @@ private fun WelcomePage(onNext: () -> Unit) {
                     "no cloud, no data leaving your device.",
             fontFamily = FontFamily.Monospace,
             fontSize = 13.sp,
-            color = Color(0xFF888888),
+            color = colorScheme.tertiary,
             textAlign = TextAlign.Center,
             lineHeight = 20.sp
         )
@@ -176,7 +179,7 @@ private fun PrivacyPage(onEnableCamera: () -> Unit) {
             fontFamily = FontFamily.Monospace,
             fontWeight = FontWeight.Bold,
             fontSize = 24.sp,
-            color = Color(0xFF00FF00)
+            color = HackerColor
         )
 
         // Gap between heading and first card — slightly smaller than the 32dp gap on
@@ -279,7 +282,7 @@ private fun OnboardingButton(label: String, onClick: () -> Unit) {
         shape = RoundedCornerShape(12.dp),
         // Green on near-black matches the app's monochrome palette
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF00FF00),
+            containerColor = HackerColor,
             contentColor = Color(0xFF0A0A0A)
         )
     ) {
@@ -302,7 +305,7 @@ private fun PageIndicator(pageCount: Int, currentPage: Int, modifier: Modifier =
         repeat(pageCount) { index ->
             // Animate color when the active page changes rather than snapping instantly
             val color by animateColorAsState(
-                targetValue = if (index == currentPage) Color(0xFF00FF00) else Color(0xFF333333),
+                targetValue = if (index == currentPage) HackerColor else Color(0xFF333333),
                 animationSpec = tween(300),
                 label = "dot_color"
             )
