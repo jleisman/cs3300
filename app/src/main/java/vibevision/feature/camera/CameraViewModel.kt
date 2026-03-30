@@ -11,6 +11,10 @@ import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
 
+import org.tensorflow.lite.Interpreter
+import java.io.FileInputStream
+import java.nio.channels.FileChannel
+
 @HiltViewModel
 class CameraViewModel @Inject constructor(
     private val repo: ImageRepository
