@@ -2,12 +2,13 @@ package com.vibevision.feature.camera
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-
 /*
  * These screens handle the UI states when permission is denied:
  * - FirstDenyScreen: user can retry the permission request.
@@ -27,9 +28,16 @@ fun FirstDenyScreen(onRequestPermission: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Camera permission is required to use this app.")
+        Text(
+            text = "Camera permission is required to use this app.",
+            color = colorScheme.secondary)
         Spacer(Modifier.height(16.dp))
-        Button(onClick = onRequestPermission) {
+        Button(onClick = onRequestPermission,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = colorScheme.tertiary,
+                contentColor = colorScheme.onTertiary
+            )
+        ) {
             Text("Grant camera permission")
         }
     }

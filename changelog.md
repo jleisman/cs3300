@@ -54,8 +54,8 @@ Maintainer will:
 
 ## [0.0.2] - 2026-03-15
 ### Added
-- testing for tenseflow lite
-- tenseflow lite ML model
+- testing for tensorflow lite
+- tensorflow lite ML model
 - Preview of camera view
 - Internal saving of PNG files
   - orientation checking and fixed for saved files
