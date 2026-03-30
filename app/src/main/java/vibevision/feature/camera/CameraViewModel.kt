@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -16,26 +18,33 @@ class CameraViewModel @Inject constructor(
 
     private val tag = "CameraViewModel"
 
+    // Emotion label exposed to the UI, defaults to "Unknown" before any ML result
+    private val _emotion = MutableStateFlow("Unknown")
+    val emotion: StateFlow<String> = _emotion
+
+    // Confidence score (0–100) exposed to the UI, defaults to 0 before any ML result
+    private val _confidence = MutableStateFlow(0f)
+    val confidence: StateFlow<Float> = _confidence
+
     /*
      * Called every time CameraPreview delivers a processed Bitmap.
-     * This function:
-     * 1. Saves the bitmap as a PNG
-     * 2. Runs ML on the saved file
-     * 3. Performs immediate cleanup if ML succeeds
-     * 4. Performs fallback cleanup (files older than 1 minute)
+     *
+     * Steps:
+     * 1. Save the bitmap as a PNG to internal storage
+     * 2. Pass the file to the ML model for inference
+     * 3. Delete the file immediately if ML succeeds
+     * 4. Run fallback cleanup to remove files older than 1 minute,
+     *    catching any files that were not deleted in step 3
      */
     fun onBitmapCaptured(bitmap: Bitmap) {
         viewModelScope.launch {
             Log.d(tag, "Received bitmap from CameraPreview")
 
-            // Save file
             val file = repo.save(bitmap)
             Log.d(tag, "Running ML on: ${file.name}")
 
-            // Run ML (placeholder)
             val mlSuccess = processWithML(file)
 
-            // Cleanup after success
             if (mlSuccess) {
                 Log.d(tag, "ML succeeded for ${file.name}, deleting immediately")
                 repo.delete(file)
@@ -43,34 +52,35 @@ class CameraViewModel @Inject constructor(
                 Log.w(tag, "ML failed or returned false for ${file.name}")
             }
 
-            // Delete all files older than 1 minute
-            // This keeps the directory clean
             repo.deleteOlderThan(1)
             Log.d(tag, "Ran fallback cleanup (older than 1 minute)")
         }
     }
 
     /*
-     * Stub for ML processing.
-     * Replace this with your actual TensorFlow Lite inference logic.
-     * This method currently always returns false to force the fallback path.
+     * Runs ML inference on the given file and updates emotion state.
+     *
+     * Currently a stub — replace the body with real TensorFlow Lite inference.
+     * Returns true if inference succeeded, false otherwise.
+     * Returning false forces the fallback cleanup path in onBitmapCaptured.
      */
     private suspend fun processWithML(file: File): Boolean {
-        // TODO: Replace with actual ML logic
+        _emotion.value = "Sad"      // TODO: replace with ML output
+        _confidence.value = 29.3f   // TODO: replace with ML output
         return false
     }
 
     /*
-     * Called when the ViewModel is about to be destroyed.
-     * This typically happens when the Activity finishes or the app is closed.
+     * Called when the ViewModel is about to be destroyed, typically when
+     * the Activity finishes or the app process is killed.
      *
-     * We perform a full cleanup here so no temporary PNGs remain on disk.
+     * Deletes all remaining PNG files from internal storage so no
+     * temporary captures are left on disk after the session ends.
      */
     override fun onCleared() {
         super.onCleared()
         viewModelScope.launch {
-            // Cleanup all stored images
-            Log.d(tag, "ViewModel.onCleared() → deleting all PNGs")
+            Log.d(tag, "ViewModel cleared, deleting all remaining PNGs")
             repo.deleteAll()
         }
     }

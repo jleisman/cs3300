@@ -20,13 +20,21 @@ Maintainer will:
 [//]: # (This is the unreleased section. Put code changes that are currently in development here)
 ## [Unreleased]
 ### Added
+- CameraOverlays.kt for text and box
+- Intro screens for first time loading app
 ### Changed
+- App colors and theming
+  - New default colors and handling of dark and light mode
+- Reworked CameraScreen.kt to move initial camera permissions to be handled by intro screens
+- MainActivity.kt updated with new screens logic and theme logic
+- Centralized color codes from camera overlay to Color.kt
 ### Fixed
 ### Removed
+- Marked FaceAlignmentBox for deletion
 ### Security
 
 
-## [1.0.3] - 2026-03-16
+## [0.1.0] - 2026-03-16
 ### Added
 - Imported and implemented Hilt and KSP.
 - Created MyApp.kt.
@@ -44,12 +52,12 @@ Maintainer will:
 - Added caching to gradle.properties for faster build times
 
 
-## [1.0.2] - 2026-03-15
+## [0.0.2] - 2026-03-15
 ### Added
-- testing for tenseflow lite
-- tenseflow lite ML model
+- testing for tensorflow lite
+- tensorflow lite ML model
 - Preview of camera view
-- Interal saving of PNG files
+- Internal saving of PNG files
   - orientation checking and fixed for saved files
   - cropped to 128x128
 ### Changed
@@ -58,12 +66,12 @@ Maintainer will:
 ### Fixed
 - gitignore
 
-## [1.0.1] - 2026-02-17
+## [0.0.1] - 2026-02-17
 ### Fixed
 - Gradle settings for Android environment
 - New documents
 
-## [1.0.0] - 2026-02-12
+## [0.0.0] - 2026-02-12
 ### Added   
 - Initial Android app interface.
 - On-device ML model in python.
