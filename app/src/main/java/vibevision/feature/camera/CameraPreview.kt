@@ -20,63 +20,66 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 
-/**
+/*
  * Displays a CameraX PreviewView inside a Compose layout and
  * captures frames at a fixed interval for ML processing.
  *
  * Responsibilities:
  * - Host CameraX Preview inside Compose using AndroidView
- * - Configure ImageAnalysis and throttle frame capture (every N ms)
- * - Convert ImageProxy → Bitmap, rotate, crop, resize
- * - Deliver standardized Bitmap to the ViewModel
+ * - Configure ImageAnalysis and throttle frame capture every N ms
+ * - Convert ImageProxy to Bitmap, rotate, crop, and resize
+ * - Deliver a standardized Bitmap to the ViewModel via onFrameCaptured
  */
 @Composable
 fun CameraPreview(
     modifier: Modifier = Modifier,
     cameraSelector: CameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA,
-    analysisIntervalMillis: Long = 5_000L,  // Minimum time between captures
-    targetWidth: Int = 128,                 // Final ML input size
-    targetHeight: Int = 128,
-    onFrameCaptured: (Bitmap) -> Unit       // Callback to ViewModel
+    analysisIntervalMillis: Long = 5_000L,  // Minimum ms between frames sent to ML
+    targetWidth: Int = 128,                 // ML model input width
+    targetHeight: Int = 128,                // ML model input height
+    onFrameCaptured: (Bitmap) -> Unit       // Delivers each processed frame to the caller
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    // CameraProvider is expensive; remember it across recompositions
+    // Retrieving a CameraProvider is expensive — remember it so it survives recompositions
     val cameraProviderFuture = remember {
         ProcessCameraProvider.getInstance(context)
     }
 
-    // Single-thread executor ensures ImageAnalysis frames are processed sequentially
+    // A single-thread executor guarantees frames are analyzed one at a time,
+    // preventing concurrent access to the YUV converter and bitmap operations
     val analysisExecutor = remember { Executors.newSingleThreadExecutor() }
 
-    // Converter from YUV_420_888 (ImageProxy) → ARGB Bitmap
+    // Kept in remember so the converter is not re-allocated on every recomposition
     val yuvToRgbConverter = remember { YuvToRgbConverter() }
 
     AndroidView(
         modifier = modifier,
         factory = { ctx ->
-            // Standard CameraX Preview rendering surface
             val previewView = PreviewView(ctx).apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
-                scaleType = PreviewView.ScaleType.FILL_CENTER
+                // FIT_CENTER keeps the aspect ratio intact instead of stretching to fill
+                scaleType = PreviewView.ScaleType.FIT_CENTER
+                setBackgroundColor(android.graphics.Color.TRANSPARENT)
             }
 
-            // CameraX Preview use case
             val previewUseCase = Preview.Builder()
                 .build()
                 .also { preview ->
                     preview.surfaceProvider = previewView.surfaceProvider
                 }
 
-            // Used to throttle ImageAnalysis events
+            // Tracks the timestamp of the last frame that was processed.
+            // AtomicLong is used because the analyzer runs on a background thread
             val lastAnalyzedTimestamp = AtomicLong(0L)
 
-            // ImageAnalysis use case for reading frames
             val analysisUseCase = ImageAnalysis.Builder()
+                // STRATEGY_KEEP_ONLY_LATEST drops queued frames so the analyzer
+                // always works on the most recent frame rather than a backlog
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also { analysis ->
@@ -85,38 +88,40 @@ fun CameraPreview(
                             val now = System.currentTimeMillis()
                             val last = lastAnalyzedTimestamp.get()
 
-                            // Only process a frame if enough time has elapsed
+                            // Skip this frame if not enough time has passed since the last one.
+                            // This throttles ML calls without blocking the camera pipeline
                             if (now - last >= analysisIntervalMillis) {
                                 lastAnalyzedTimestamp.set(now)
 
                                 val rotationDegrees = imageProxy.imageInfo.rotationDegrees
 
-                                // Convert YUV → Bitmap
                                 val bitmap = imageProxy.toBitmap(yuvToRgbConverter)
 
-                                // Ensure orientation matches screen
+                                // CameraX reports rotation separately from pixel data —
+                                // apply it here so the bitmap is always upright before ML
                                 val rotated = rotateBitmapIfNeeded(bitmap, rotationDegrees)
 
-                                // Center‑crop and resize to ML‑target resolution
                                 val standardized = cropCenterAndResize(
                                     source = rotated,
                                     targetWidth = targetWidth,
                                     targetHeight = targetHeight
                                 )
 
-                                // Deliver standardized bitmap to the caller (ViewModel)
                                 onFrameCaptured(standardized)
                             }
                         } catch (t: Throwable) {
                             Log.e("CameraPreview", "Image analysis failed", t)
                         } finally {
-                            // Must close each ImageProxy or CameraX stalls
+                            // imageProxy must always be closed — failing to do so causes
+                            // CameraX to stall and stop delivering new frames
                             imageProxy.close()
                         }
                     }
                 }
 
-            // Bind preview + analysis to lifecycle
+            // addListener fires on the main executor once the CameraProvider is ready.
+            // unbindAll before rebinding ensures no use case from a previous
+            // configuration (e.g. rotation) remains attached
             cameraProviderFuture.addListener({
                 try {
                     val cameraProvider = cameraProviderFuture.get()
@@ -137,11 +142,12 @@ fun CameraPreview(
     )
 }
 
-/**
- * Rotates a bitmap using the rotation degrees provided by CameraX.
+/*
+ * Rotates a bitmap by the degrees reported by CameraX.
  *
- * CameraX delivers images rotated depending on device orientation.
- * ML models expect normalized upright images.
+ * CameraX delivers raw sensor pixels without applying device orientation,
+ * so rotation must be applied manually before passing the bitmap to the ML model.
+ * Returns the original bitmap unchanged if rotation is 0 to avoid an unnecessary copy.
  */
 private fun rotateBitmapIfNeeded(source: Bitmap, rotationDegrees: Int): Bitmap {
     if (rotationDegrees == 0) return source
@@ -161,13 +167,13 @@ private fun rotateBitmapIfNeeded(source: Bitmap, rotationDegrees: Int): Bitmap {
     )
 }
 
-/**
+/*
  * Center-crops the source bitmap to match the target aspect ratio,
- * then resizes it to the ML-required resolution.
+ * then resizes it to the exact dimensions required by the ML model.
  *
- * This ensures consistent input size for the ML model:
- * - Square or rectangular crops
- * - Bilinear filtering for smooth resize
+ * Cropping before resizing avoids distortion — the subject stays proportional
+ * regardless of what aspect ratio the camera delivered.
+ * coerceAtLeast and coerceAtMost guard against off-by-one errors at the bitmap edges.
  */
 private fun cropCenterAndResize(
     source: Bitmap,
@@ -185,22 +191,22 @@ private fun cropCenterAndResize(
     val cropX: Int
     val cropY: Int
 
-    // Decide crop shape by comparing aspect ratios
+    // Compare aspect ratios to decide which dimension to trim.
+    // The goal is the largest centered rectangle that fits the target ratio
     if (srcAspect > targetAspect) {
-        // Too wide → trim width
+        // Source is wider than needed — trim the left and right sides equally
         cropHeight = srcHeight
         cropWidth = (srcHeight * targetAspect).toInt()
         cropX = (srcWidth - cropWidth) / 2
         cropY = 0
     } else {
-        // Too tall → trim height
+        // Source is taller than needed — trim the top and bottom equally
         cropWidth = srcWidth
         cropHeight = (srcWidth / targetAspect).toInt()
         cropX = 0
         cropY = (srcHeight - cropHeight) / 2
     }
 
-    // Perform crop
     val cropped = Bitmap.createBitmap(
         source,
         cropX.coerceAtLeast(0),
@@ -209,10 +215,12 @@ private fun cropCenterAndResize(
         cropHeight.coerceAtMost(srcHeight)
     )
 
-    // Resize to final ML input resolution
+    // filter = true applies bilinear filtering during the scale operation,
+    // which produces smoother results than nearest-neighbor at the cost of
+    // a small amount of extra CPU time
     return cropped.scale(
         width = targetWidth,
         height = targetHeight,
-        filter = true // bilinear filtering for smoother result
+        filter = true
     )
 }
