@@ -1,4 +1,4 @@
-package comvibevision
+package com.vibevision
 
 import org.junit.Test
 

@@ -7,7 +7,7 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -22,7 +22,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.compose.ui.unit.min
 
 /*
  * Top-level screen that reflects the current camera permission state.
@@ -91,7 +90,7 @@ fun CameraScreen(
                 val emotion by viewModel.emotion.collectAsState()
                 val confidence by viewModel.confidence.collectAsState()
 
-                BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                Box(modifier = Modifier.fillMaxSize()) {
 
                     CameraPreview(
                         modifier = Modifier.fillMaxSize(),
@@ -107,16 +106,6 @@ fun CameraScreen(
                             .align(Alignment.TopStart)
                             .padding(start = 16.dp, top = 96.dp)
                     )
-
-// TODO: Remove FaceAlignementBox after testing
-                    // Square crop — constrains the alignment box to the smaller screen dimension
-                    val side = min(maxWidth, maxHeight)
-//                    FaceAlignmentBox(
-//                        color = colorForEmotion(emotion),
-//                        modifier = Modifier
-//                            .align(Alignment.Center)
-//                            .size(side)
-//                    )
                 }
             }
 

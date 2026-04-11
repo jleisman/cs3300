@@ -20,19 +20,25 @@ Maintainer will:
 [//]: # (This is the unreleased section. Put code changes that are currently in development here)
 ## [Unreleased]
 ### Added
-- CameraOverlays.kt for text and box
+### Changed
+### Fixed
+### Removed
+### Security
+
+## [0.2.0] - 2026-04-11
+### Added
+- CameraOverlays.kt for text
 - Intro screens for first time loading app
+- Custom Icon for app
 ### Changed
 - App colors and theming
   - New default colors and handling of dark and light mode
 - Reworked CameraScreen.kt to move initial camera permissions to be handled by intro screens
 - MainActivity.kt updated with new screens logic and theme logic
 - Centralized color codes from camera overlay to Color.kt
-### Fixed
+- Updated Readme
 ### Removed
-- Marked FaceAlignmentBox for deletion
-### Security
-
+- FaceAlignmentBox and associated code
 
 ## [0.1.0] - 2026-03-16
 ### Added
