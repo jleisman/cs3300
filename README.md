@@ -20,7 +20,7 @@ live overlay showing detected emotion and confidence level.
 - Android Studio IDE
   - Kotlin
   - Gradle
-- ML IDE
+- Jupyter Notebook (Google Colab Hardware)
   - Python
 
 ## Project Structure
