@@ -67,5 +67,5 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     // TFLite File
-    implementation("org.tensorflow:tensorflow-lite:2.17.0")
+    implementation(libs.tensorflow.lite)
 }
