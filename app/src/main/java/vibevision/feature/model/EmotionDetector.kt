@@ -32,12 +32,9 @@ import java.nio.channels.FileChannel
  */
 class EmotionDetector(context: Context) : AutoCloseable {
 
-    // -----------------------------------------------------------------------
     // Constants
-    // -----------------------------------------------------------------------
-
     companion object {
-        private const val MODEL_FILE   = "model.tflite"
+        private const val MODEL_FILE   = "AllVibesNoVision.tflite"
         private const val INPUT_SIZE   = 128          // model expects 128×128
         private const val NUM_CHANNELS = 1            // grayscale
         private const val NUM_CLASSES  = 8
