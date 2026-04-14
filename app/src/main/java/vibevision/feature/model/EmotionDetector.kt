@@ -15,6 +15,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
+import androidx.core.graphics.scale
 
 /**
  * EmotionDetector
@@ -53,9 +54,7 @@ class EmotionDetector(context: Context) : AutoCloseable {
         )
     }
 
-    // -----------------------------------------------------------------------
     // Data class returned to callers
-    // -----------------------------------------------------------------------
 
     data class EmotionResult(
         val label: String,
@@ -63,10 +62,7 @@ class EmotionDetector(context: Context) : AutoCloseable {
         val allScores: Map<String, Float>  // full probability distribution
     )
 
-    // -----------------------------------------------------------------------
     // TFLite interpreter
-    // -----------------------------------------------------------------------
-
     private val interpreter: Interpreter
 
     init {
@@ -87,9 +83,7 @@ class EmotionDetector(context: Context) : AutoCloseable {
         )
     }
 
-    // -----------------------------------------------------------------------
     // Public API — analyze a CameraX ImageProxy
-    // -----------------------------------------------------------------------
 
     /**
      * Run inference on a CameraX [ImageProxy].
@@ -112,9 +106,7 @@ class EmotionDetector(context: Context) : AutoCloseable {
      */
     fun analyze(bitmap: Bitmap): EmotionResult = runInference(bitmap)
 
-    // -----------------------------------------------------------------------
     // Image preprocessing
-    // -----------------------------------------------------------------------
 
     /**
      * Convert a CameraX YUV [ImageProxy] → upright RGB [Bitmap].
@@ -154,7 +146,7 @@ class EmotionDetector(context: Context) : AutoCloseable {
      */
     private fun preprocessBitmap(bitmap: Bitmap): ByteBuffer {
         // 1. Resize
-        val resized = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, true)
+        val resized = bitmap.scale(INPUT_SIZE, INPUT_SIZE)
 
         // 2. Allocate: 1 image × 128 × 128 × 1 channel × 4 bytes (float32)
         val byteBuffer = ByteBuffer.allocateDirect(
@@ -177,9 +169,7 @@ class EmotionDetector(context: Context) : AutoCloseable {
         return byteBuffer
     }
 
-    // -----------------------------------------------------------------------
     // Inference
-    // -----------------------------------------------------------------------
 
     private fun runInference(bitmap: Bitmap): EmotionResult {
         val inputBuffer = preprocessBitmap(bitmap)
@@ -205,9 +195,7 @@ class EmotionDetector(context: Context) : AutoCloseable {
         )
     }
 
-    // -----------------------------------------------------------------------
     // Lifecycle
-    // -----------------------------------------------------------------------
 
     override fun close() {
         interpreter.close()
