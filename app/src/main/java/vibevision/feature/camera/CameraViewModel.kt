@@ -27,7 +27,7 @@ class CameraViewModel @Inject constructor(
     private val detector by lazy { EmotionDetector(context) }
 
     // Emotion label exposed to the UI, defaults to "Unknown" before any ML result
-    private val _emotion = MutableStateFlow("Unknown")
+    private val _emotion: MutableStateFlow<String> = MutableStateFlow("Unknown")
     val emotion: StateFlow<String> = _emotion
 
     // Confidence score (0–100) exposed to the UI, defaults to 0 before any ML result
@@ -79,7 +79,8 @@ class CameraViewModel @Inject constructor(
 
             Log.d(tag, "Emotion: ${result.label} (${result.confidence})")
             // TODO: Link to ui text
-
+            _emotion.value = result.label
+            _confidence.value = result.confidence
             true
         } catch (e: Exception) {
             Log.e(tag, "Error during ML processing", e)
