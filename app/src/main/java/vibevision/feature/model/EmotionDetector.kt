@@ -21,7 +21,7 @@ import androidx.core.graphics.scale
  * EmotionDetector
  *
  * Wraps the TFLite emotion model. The model expects:
- *   Input  : float32[1, 128, 128, 1]  — single-channel (grayscale), normalised to [0, 1]
+ *   Input  : float32[1, 128, 128, 1]  — single-channel (grayscale), normalized to [0, 1]
  *   Output : float32[1, 8]            — softmax scores for 8 emotion classes
  *
  * Usage:
@@ -85,17 +85,6 @@ class EmotionDetector(context: Context) : AutoCloseable {
 
     // Public API — analyze a CameraX ImageProxy
 
-    /**
-     * Run inference on a CameraX [ImageProxy].
-     *
-     * Call this inside your [ImageAnalysis.Analyzer.analyze] override.
-     * The proxy is NOT closed here — close it in your analyzer after this
-     * call returns.
-     *
-     * @param imageProxy  The image frame from CameraX.
-     * @param rotationDegrees  Rotation to apply so the face is upright.
-     *                         Pass [imageProxy.imageInfo.rotationDegrees].
-     */
     fun analyze(imageProxy: ImageProxy, rotationDegrees: Int = 0): EmotionResult {
         val bitmap = imageProxy.toBitmap(rotationDegrees)
         return runInference(bitmap)
@@ -141,7 +130,7 @@ class EmotionDetector(context: Context) : AutoCloseable {
     }
 
     /**
-     * Resize to 128×128, convert to grayscale, normalise to [0, 1],
+     * Resize to 128×128, convert to grayscale, normalize to [0, 1],
      * and pack into a [ByteBuffer] shaped [1, 128, 128, 1].
      */
     private fun preprocessBitmap(bitmap: Bitmap): ByteBuffer {

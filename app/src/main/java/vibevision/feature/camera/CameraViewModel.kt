@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
-import androidx.camera.core.impl.utils.ContextUtil.getApplicationContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vibevision.feature.model.EmotionDetector
@@ -72,7 +71,7 @@ class CameraViewModel @Inject constructor(
     }
 
 
-    private suspend fun processWithML(file: File): Boolean {
+    private fun processWithML(file: File): Boolean {
         return try {
             val bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return false
 
