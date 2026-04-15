@@ -7,6 +7,7 @@ import android.graphics.ImageFormat
 import android.graphics.Matrix
 import android.graphics.Rect
 import android.graphics.YuvImage
+import android.util.Log
 import androidx.camera.core.ImageProxy
 import org.tensorflow.lite.Interpreter
 import java.io.ByteArrayOutputStream
@@ -16,7 +17,6 @@ import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import androidx.core.graphics.scale
-
 /**
  * EmotionDetector
  *
@@ -38,7 +38,8 @@ class EmotionDetector(context: Context) : AutoCloseable {
         private const val MODEL_FILE   = "AllVibesNoVision.tflite"
         private const val INPUT_SIZE   = 128          // model expects 128×128
         private const val NUM_CHANNELS = 1            // grayscale
-        private const val NUM_CLASSES  = 8
+        // TODO: Autocheck how many classes from model instead of hardcoded
+        private const val NUM_CLASSES  = 4
 
         // Adjust this list to match the exact training-label order of your model.
         // Common 8-class FER mappings (FER+ / AffectNet):
@@ -46,11 +47,7 @@ class EmotionDetector(context: Context) : AutoCloseable {
             "Neutral",
             "Happy",
             "Sad",
-            "Surprise",
-            "Fear",
-            "Disgust",
             "Anger",
-            "Contempt"
         )
     }
 
@@ -66,12 +63,14 @@ class EmotionDetector(context: Context) : AutoCloseable {
     private val interpreter: Interpreter
 
     init {
-        interpreter = Interpreter(loadModelFile(context), Interpreter.Options().apply {
-            setNumThreads(4)
-        })
+        val options = Interpreter.Options().apply { setNumThreads(4) }
+        interpreter = Interpreter(loadModelFile(context), options)
+        val outputTensor = interpreter.getOutputTensor(0)
+        Log.d("TFLite", "Output shape = ${outputTensor.shape().contentToString()}")
     }
 
-    /** Load the model from the app's assets folder. */
+
+        /** Load the model from the app's assets folder. */
     private fun loadModelFile(context: Context): MappedByteBuffer {
         val assetFileDescriptor = context.assets.openFd(MODEL_FILE)
         val inputStream = FileInputStream(assetFileDescriptor.fileDescriptor)

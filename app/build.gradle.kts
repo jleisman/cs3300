@@ -70,4 +70,5 @@ dependencies {
 
     // TFLite File
     implementation(libs.tensorflow.lite)
+    implementation(libs.tensorflow.lite.select.tf.ops)
 }
