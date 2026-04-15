@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.konan.target.ClangArgs
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -37,7 +39,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    aaptOptions{
+    aaptOptions {
         noCompress("tflite")
     }
 }
