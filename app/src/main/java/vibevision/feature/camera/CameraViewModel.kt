@@ -95,6 +95,7 @@ class CameraViewModel @Inject constructor(
      */
     override fun onCleared() {
         super.onCleared()
+        detector.close()
         viewModelScope.launch {
             Log.d(tag, "ViewModel cleared, deleting all remaining PNGs")
             repo.deleteAll()
