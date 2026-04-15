@@ -133,24 +133,30 @@ class EmotionDetector(context: Context) : AutoCloseable {
      * and pack into a [ByteBuffer] shaped [1, 128, 128, 1].
      */
     private fun preprocessBitmap(bitmap: Bitmap): ByteBuffer {
-        // 1. Resize
-        val resized = bitmap.scale(INPUT_SIZE, INPUT_SIZE)
+        require(bitmap.width == INPUT_SIZE && bitmap.height == INPUT_SIZE) {
+            "Bitmap must be ${INPUT_SIZE}x${INPUT_SIZE}, got ${bitmap.width}x${bitmap.height}"
+        }
 
-        // 2. Allocate: 1 image × 128 × 128 × 1 channel × 4 bytes (float32)
         val byteBuffer = ByteBuffer.allocateDirect(
             1 * INPUT_SIZE * INPUT_SIZE * NUM_CHANNELS * 4
-        ).apply { order(ByteOrder.nativeOrder()) }
+        ).apply {
+            order(ByteOrder.nativeOrder())
+        }
 
-        // 3. Convert each pixel to grayscale float in [0, 1]
-        val intPixels = IntArray(INPUT_SIZE * INPUT_SIZE)
-        resized.getPixels(intPixels, 0, INPUT_SIZE, 0, 0, INPUT_SIZE, INPUT_SIZE)
+        val pixels = IntArray(INPUT_SIZE * INPUT_SIZE)
+        bitmap.getPixels(
+            pixels,
+            0,
+            INPUT_SIZE,
+            0,
+            0,
+            INPUT_SIZE,
+            INPUT_SIZE
+        )
 
-        for (pixel in intPixels) {
-            val r = (pixel shr 16 and 0xFF)
-            val g = (pixel shr 8  and 0xFF)
-            val b = (pixel        and 0xFF)
-            // Standard luma (BT.601) — matches most FER training pipelines
-            val gray = (0.299f * r + 0.587f * g + 0.114f * b) / 255.0f
+        for (pixel in pixels) {
+            // Since bitmap is already grayscale, R == G == B
+            val gray = (pixel and 0xFF) / 255.0f
             byteBuffer.putFloat(gray)
         }
 

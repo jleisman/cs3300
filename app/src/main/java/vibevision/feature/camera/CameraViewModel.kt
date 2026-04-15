@@ -53,8 +53,8 @@ class CameraViewModel @Inject constructor(
             Log.d(tag, "Running ML on: ${file.name}")
 
             // Run ML (placeholder)
-            val mlSuccess = processWithML(file)
-
+            //val mlSuccess = processWithML(file)
+            val mlSuccess = processWithML(bitmap)
             // Cleanup after success
             if (mlSuccess) {
                 Log.d(tag, "ML succeeded for ${file.name}, deleting immediately")
@@ -71,13 +71,14 @@ class CameraViewModel @Inject constructor(
     }
 
 
-    private fun processWithML(file: File): Boolean {
+    private fun processWithML(bitmap: Bitmap): Boolean {
         return try {
-            val bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return false
+            //val bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return false
 
             val result = detector.analyze(bitmap)
 
             Log.d(tag, "Emotion: ${result.label} (${result.confidence})")
+            // TODO: Link to ui text
 
             true
         } catch (e: Exception) {
