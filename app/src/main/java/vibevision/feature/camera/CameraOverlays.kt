@@ -28,7 +28,7 @@ fun EmotionOverlay(
         )
         // "%.1f" formats confidence to one decimal place (e.g. 83.4%)
         Text(
-            text = "Confidence: ${"%.1f".format(confidence)}%",
+            text = "Confidence: ${"%.2f".format(confidence * 100F)}%",
             color = Color(0xFF00FF00),
             fontFamily = FontFamily.Monospace
         )
