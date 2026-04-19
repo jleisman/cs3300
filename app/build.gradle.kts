@@ -39,9 +39,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    aaptOptions {
-        noCompress("tflite")
-    }
+    //aaptOptions {
+    //    noCompress("tflite")
+    //}
 }
 
 dependencies {
@@ -69,6 +69,5 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     // TFLite File
-    implementation(libs.tensorflow.lite)
-    implementation(libs.tensorflow.lite.select.tf.ops)
+    implementation(libs.litert)
 }

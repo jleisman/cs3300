@@ -16,7 +16,6 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
-import androidx.core.graphics.scale
 /**
  * EmotionDetector
  *
@@ -35,7 +34,7 @@ class EmotionDetector(context: Context) : AutoCloseable {
 
     // Constants
     companion object {
-        private const val MODEL_FILE   = "AllVibesNoVision.tflite"
+        private const val MODEL_FILE   = "model_2.tflite"
         private const val INPUT_SIZE   = 128          // model expects 128×128
         private const val NUM_CHANNELS = 1            // grayscale
         // TODO: Autocheck how many classes from model instead of hardcoded

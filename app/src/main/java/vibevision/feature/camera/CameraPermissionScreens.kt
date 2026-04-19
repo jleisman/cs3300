@@ -59,12 +59,18 @@ fun PermanentDenyScreen(onOpenSettings: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            "Camera permission has been denied.\n" +
+            text = "Camera permission has been denied.\n" +
                     "This app requires camera access.\n" +
-                    "Enable it in Android settings."
+                    "Enable it in Android settings.",
+            color = colorScheme.secondary
         )
         Spacer(Modifier.height(16.dp))
-        Button(onClick = onOpenSettings) {
+        Button(onClick = onOpenSettings,
+            colors = ButtonDefaults.buttonColors(
+            containerColor = colorScheme.tertiary,
+            contentColor = colorScheme.onTertiary
+            )
+        ) {
             Text("Open App Settings")
         }
     }

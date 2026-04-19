@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicLong
 fun CameraPreview(
     modifier: Modifier = Modifier,
     cameraSelector: CameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA,
-    analysisIntervalMillis: Long = 5_000L,  // Minimum ms between frames sent to ML
+    analysisIntervalMillis: Long = 1_000L,  // Minimum ms between frames sent to ML
     targetWidth: Int = 128,                 // ML model input width
     targetHeight: Int = 128,                // ML model input height
     onFrameCaptured: (Bitmap) -> Unit       // Delivers each processed frame to the caller
