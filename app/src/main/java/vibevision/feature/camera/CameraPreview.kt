@@ -20,7 +20,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 
-/*
+/* Joshua Leisman
  * Displays a CameraX PreviewView inside a Compose layout and
  * captures frames at a fixed interval for ML processing.
  *

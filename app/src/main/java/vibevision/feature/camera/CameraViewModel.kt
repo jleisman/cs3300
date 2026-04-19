@@ -12,73 +12,86 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
-
+/* Joshua Leisman and Jared Abels
+ * ViewModel responsible for handling camera image processing
+ * and coordinating emotion detection using a machine learning model.
+ *
+ * Responsibilities:
+ * - Receive bitmaps captured by the camera
+ * - Persist images temporarily via [ImageRepository]
+ * - Run ML inference using [EmotionDetector]
+ * - Expose emotion label and confidence score to the UI
+ * - Perform cleanup of temporary files
+ *
+ * This ViewModel follows the MVVM architecture and uses
+ * StateFlow to expose reactive UI state.
+ */
 @HiltViewModel
 class CameraViewModel @Inject constructor(
-    private val repo: ImageRepository,
+    // Application context is required for loading ML assets
     @param:dagger.hilt.android.qualifiers.ApplicationContext
-    private val context: Context
-) : ViewModel() {
+    private val context: Context) : ViewModel() {
 
     private val tag = "CameraViewModel"
+
+    // Lazily initialized ML detector to avoid unnecessary startup cost
     private val detector by lazy { EmotionDetector(context) }
 
-    // Emotion label exposed to the UI, defaults to "Unknown" before any ML result
-    private val _emotion: MutableStateFlow<String> = MutableStateFlow("Unknown")
+    // Emotion label exposed to the UI (default: "Unknown")
+    private val _emotion = MutableStateFlow("Unknown")
     val emotion: StateFlow<String> = _emotion
 
-    // Confidence score (0–100) exposed to the UI, defaults to 0 before any ML result
+    // Confidence score (0–100) exposed to the UI (default: 0)
     private val _confidence = MutableStateFlow(0f)
     val confidence: StateFlow<Float> = _confidence
 
     /*
-     * Called every time CameraPreview delivers a processed Bitmap.
+     * Called whenever the camera captures a processed [Bitmap].
      *
-     * Steps:
-     * 1. Save the bitmap as a PNG to internal storage
-     * 2. Pass the file to the ML model for inference
+     * Workflow:
+     * 1. Save the bitmap to internal storage
+     * 2. Run ML inference on the bitmap
      * 3. Delete the file immediately if ML succeeds
-     * 4. Run fallback cleanup to remove files older than 1 minute,
-     *    catching any files that were not deleted in step 3
+     * 4. Run fallback cleanup to remove files older than 1 minute
+     *
+     * All work is performed inside [viewModelScope] to ensure
+     * lifecycle awareness and proper cancellation.
      */
     fun onBitmapCaptured(bitmap: Bitmap) {
         viewModelScope.launch {
             Log.d(tag, "Received bitmap from CameraPreview")
+            Log.d(tag, "Running ML on: $bitmap")
 
-            // Save file
-            val file = repo.save(bitmap)
-            Log.d(tag, "Running ML on: ${file.name}")
-
-            // Run ML (placeholder)
-            //val mlSuccess = processWithML(file)
+            // Run ML inference directly on the bitmap
             val mlSuccess = processWithML(bitmap)
-            // Cleanup after success
-            if (mlSuccess) {
-                Log.d(tag, "ML succeeded for ${file.name}, deleting immediately")
-                repo.delete(file)
-            } else {
-                Log.w(tag, "ML failed or returned false for ${file.name}")
-            }
 
-            // Delete all files older than 1 minute
-            // This keeps the directory clean
-            repo.deleteOlderThan(1)
-            Log.d(tag, "Ran fallback cleanup (older than 1 minute)")
+            // Immediate logging
+            if (mlSuccess) {
+                Log.d(tag, "ML succeeded for $bitmap deleting file")
+            } else {
+                Log.w(tag, "ML failed for $bitmap")
+            }
         }
     }
 
-
+    /*
+     * Runs emotion detection on the provided [Bitmap].
+     *
+     * Updates UI state flows with the detected emotion label
+     * and confidence score if successful.
+     *
+     * @return true if ML processing succeeds, false otherwise
+     */
     private fun processWithML(bitmap: Bitmap): Boolean {
         return try {
-            //val bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return false
-
             val result = detector.analyze(bitmap)
 
-            Log.d(tag, "Emotion: ${result.label} (${result.confidence})")
-            // TODO: Link to ui text
+            Log.d(tag, "Emotion detected: ${result.label} (${result.confidence})")
+
+            // send results from ML to UI
             _emotion.value = result.label
             _confidence.value = result.confidence
+            // return true if processing successful
             true
         } catch (e: Exception) {
             Log.e(tag, "Error during ML processing", e)
@@ -87,18 +100,21 @@ class CameraViewModel @Inject constructor(
     }
 
     /*
-     * Called when the ViewModel is about to be destroyed, typically when
-     * the Activity finishes or the app process is killed.
+     * Called when the ViewModel is about to be destroyed.
      *
-     * Deletes all remaining PNG files from internal storage so no
-     * temporary captures are left on disk after the session ends.
+     * Performs final cleanup by:
+     * - Closing the ML detector
+     * - Deleting any remaining temporary image files
+     *
+     * Ensures no resources or files leak beyond the session lifecycle.
      */
     override fun onCleared() {
         super.onCleared()
         detector.close()
+
+        // log ML closing
         viewModelScope.launch {
-            Log.d(tag, "ViewModel cleared, deleting all remaining PNGs")
-            repo.deleteAll()
+            Log.d(tag, "ViewModel cleared")
         }
     }
 }

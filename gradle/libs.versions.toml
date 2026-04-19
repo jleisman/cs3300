@@ -42,17 +42,7 @@ hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", ve
 
 litert = {module = "com.google.ai.edge.litert:litert", version.ref = "litert"}
 
-# Optional CameraX features (only if/when you need them)
-#androidx-camera-video = { module = "androidx.camera:camera-video", version.ref = "camerax" }
-#androidx-camera-extensions = { module = "androidx.camera:camera-extensions", version.ref = "camerax" }
-
 [bundles]
-compose = [
-    "androidx-compose-ui",
-    "androidx-compose-ui-tooling-preview",
-    "androidx-activity-compose",
-    "androidx-compose-material3"
-]
 
 camerax = [
     "androidx-camera-core",

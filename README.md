@@ -130,3 +130,6 @@ live overlay showing detected emotion and confidence level.
         |- Theme.kt                     // Matches light and dark mode to phone
         |- Type.kt                      // Fonts of app
     - MainActivity                      // Entry point to app. Decides to show onboarding or camera
+
+    assets (./app/src/assets)
+    - model_2.tflite                    // ML model

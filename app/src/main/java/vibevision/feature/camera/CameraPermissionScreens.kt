@@ -9,13 +9,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-/*
+/* Joshua Leisman
  * These screens handle the UI states when permission is denied:
  * - FirstDenyScreen: user can retry the permission request.
  * - PermanentDenyScreen: user must open Android Settings manually.
  */
 
-/**
+/*
  * Shown after the user denies permission once.
  * Offers a retry using the system permission dialog.
  */
@@ -43,7 +43,7 @@ fun FirstDenyScreen(onRequestPermission: () -> Unit) {
     }
 }
 
-/**
+/*
  * Shown after the user denies permission multiple times.
  *
  * At this point Android will no longer show the permission dialog.

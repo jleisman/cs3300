@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 
-/*
+/* Joshua Leisman
  * Composables and helpers that render on top of the camera preview.
  *
  * EmotionOverlay  - displays the current emotion label and confidence score

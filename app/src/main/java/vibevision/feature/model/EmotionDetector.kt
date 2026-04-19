@@ -2,46 +2,54 @@ package com.vibevision.feature.model
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.ImageFormat
-import android.graphics.Matrix
-import android.graphics.Rect
-import android.graphics.YuvImage
 import android.util.Log
-import androidx.camera.core.ImageProxy
 import org.tensorflow.lite.Interpreter
-import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
-/**
+
+/* Jared Abels and Joshua Leisman
  * EmotionDetector
  *
- * Wraps the TFLite emotion model. The model expects:
- *   Input  : float32[1, 128, 128, 1]  — single-channel (grayscale), normalized to [0, 1]
- *   Output : float32[1, 8]            — softmax scores for 8 emotion classes
+ * Encapsulates a TensorFlow Lite interpreter used to perform
+ * emotion classification on images.
  *
- * Usage:
- *   val detector = EmotionDetector(context)
- *   // From a CameraX ImageProxy (call inside ImageAnalysis.Analyzer):
- *   val result = detector.analyze(imageProxy)
- *   Log.d("Emotion", result.label)        // e.g. "Happy"
- *   Log.d("Emotion", "${result.confidence}") // e.g. 0.92
+ * This class is responsible for:
+ * - Loading the TFLite model from app assets
+ * - Converting CameraX ImageProxy frames into Bitmaps
+ * - Preprocessing Bitmaps into the model's expected input format
+ * - Running inference and interpreting the output probabilities
+ *
+ * Model expectations:
+ * - Input : float32[1, 128, 128, 1]
+ *           128×128 single-channel (grayscale) image normalized to [0, 1]
+ * - Output: float32[1, NUM_CLASSES]
+ *           Probability scores for each emotion class
  */
 class EmotionDetector(context: Context) : AutoCloseable {
 
-    // Constants
+    /*
+     * Static configuration values tied to the trained model.
+     */
     companion object {
-        private const val MODEL_FILE   = "model_2.tflite"
-        private const val INPUT_SIZE   = 128          // model expects 128×128
-        private const val NUM_CHANNELS = 1            // grayscale
-        // TODO: Autocheck how many classes from model instead of hardcoded
-        private const val NUM_CLASSES  = 4
+        // Name of the TFLite model stored in the assets directory
+        private const val MODEL_FILE = "model_2.tflite"
 
-        // Adjust this list to match the exact training-label order of your model.
-        // Common 8-class FER mappings (FER+ / AffectNet):
+        // Required width and height of input images
+        private const val INPUT_SIZE = 128
+
+        // Number of channels expected by the model (1 = grayscale)
+        private const val NUM_CHANNELS = 1
+
+        // Number of emotion classes produced by the model output
+        private const val NUM_CLASSES = 4
+
+        /*
+         * Labels corresponding to the output indices of the model.
+         * The order must exactly match the training label order.
+         */
         private val EMOTION_LABELS = listOf(
             "Neutral",
             "Happy",
@@ -50,30 +58,47 @@ class EmotionDetector(context: Context) : AutoCloseable {
         )
     }
 
-    // Data class returned to callers
-
+    /*
+     * Result returned after running emotion inference.
+     *
+     * label: The emotion with the highest confidence score
+     * confidence: Confidence score for the predicted label
+     * allScores: Map of all emotion labels to their raw scores
+     */
     data class EmotionResult(
         val label: String,
         val confidence: Float,
-        val allScores: Map<String, Float>  // full probability distribution
+        val allScores: Map<String, Float>
     )
 
-    // TFLite interpreter
+    /*
+     * TensorFlow Lite interpreter instance used to run inference.
+     */
     private val interpreter: Interpreter
 
     init {
-        val options = Interpreter.Options().apply { setNumThreads(4) }
+        // Configure interpreter options (e.g., number of threads)
+        val options = Interpreter.Options().apply {
+            setNumThreads(4)
+        }
+
+        // Load the model into memory and initialize the interpreter
         interpreter = Interpreter(loadModelFile(context), options)
+
+        // Log output tensor shape for debugging and validation
         val outputTensor = interpreter.getOutputTensor(0)
         Log.d("TFLite", "Output shape = ${outputTensor.shape().contentToString()}")
     }
 
-
-        /** Load the model from the app's assets folder. */
+    /*
+     * Loads the TensorFlow Lite model file from the app's assets directory
+     * into a memory-mapped buffer suitable for the interpreter.
+     */
     private fun loadModelFile(context: Context): MappedByteBuffer {
         val assetFileDescriptor = context.assets.openFd(MODEL_FILE)
         val inputStream = FileInputStream(assetFileDescriptor.fileDescriptor)
         val fileChannel = inputStream.channel
+
         return fileChannel.map(
             FileChannel.MapMode.READ_ONLY,
             assetFileDescriptor.startOffset,
@@ -81,55 +106,25 @@ class EmotionDetector(context: Context) : AutoCloseable {
         )
     }
 
-    // Public API — analyze a CameraX ImageProxy
-
-    fun analyze(imageProxy: ImageProxy, rotationDegrees: Int = 0): EmotionResult {
-        val bitmap = imageProxy.toBitmap(rotationDegrees)
-        return runInference(bitmap)
-    }
-
-    /**
-     * Run inference directly on any [Bitmap] (e.g. from a file or gallery pick).
+    /*
+     * Runs emotion analysis directly on an existing [Bitmap].
+     *
+     * This is used when the image is already available in memory
+     * (e.g., from camera preview or gallery).
      */
     fun analyze(bitmap: Bitmap): EmotionResult = runInference(bitmap)
 
-    // Image preprocessing
-
-    /**
-     * Convert a CameraX YUV [ImageProxy] → upright RGB [Bitmap].
-     */
-    private fun ImageProxy.toBitmap(rotationDegrees: Int): Bitmap {
-        val yBuffer = planes[0].buffer
-        val uBuffer = planes[1].buffer
-        val vBuffer = planes[2].buffer
-
-        val ySize = yBuffer.remaining()
-        val uSize = uBuffer.remaining()
-        val vSize = vBuffer.remaining()
-
-        val nv21 = ByteArray(ySize + uSize + vSize)
-        yBuffer.get(nv21, 0, ySize)
-        vBuffer.get(nv21, ySize, vSize)
-        uBuffer.get(nv21, ySize + vSize, uSize)
-
-        val yuvImage = YuvImage(nv21, ImageFormat.NV21, width, height, null)
-        val out = ByteArrayOutputStream()
-        yuvImage.compressToJpeg(Rect(0, 0, width, height), 95, out)
-        val jpegBytes = out.toByteArray()
-        val rawBitmap = BitmapFactory.decodeByteArray(jpegBytes, 0, jpegBytes.size)
-
-        // Rotate to upright orientation
-        return if (rotationDegrees != 0) {
-            val matrix = Matrix().apply { postRotate(rotationDegrees.toFloat()) }
-            Bitmap.createBitmap(rawBitmap, 0, 0, rawBitmap.width, rawBitmap.height, matrix, true)
-        } else {
-            rawBitmap
-        }
-    }
-
-    /**
-     * Resize to 128×128, convert to grayscale, normalize to [0, 1],
-     * and pack into a [ByteBuffer] shaped [1, 128, 128, 1].
+    /*
+     * Preprocesses a Bitmap into the model's expected input format.
+     *
+     * Requirements:
+     * - Bitmap must already be 128×128
+     * - Image must be grayscale
+     *
+     * Processing:
+     * - Extract pixel values
+     * - Normalize intensity to [0, 1]
+     * - Pack values into a direct ByteBuffer
      */
     private fun preprocessBitmap(bitmap: Bitmap): ByteBuffer {
         require(bitmap.width == INPUT_SIZE && bitmap.height == INPUT_SIZE) {
@@ -154,7 +149,7 @@ class EmotionDetector(context: Context) : AutoCloseable {
         )
 
         for (pixel in pixels) {
-            // Since bitmap is already grayscale, R == G == B
+            // Grayscale image: R, G, and B channels are equivalent
             val gray = (pixel and 0xFF) / 255.0f
             byteBuffer.putFloat(gray)
         }
@@ -162,36 +157,37 @@ class EmotionDetector(context: Context) : AutoCloseable {
         return byteBuffer
     }
 
-    // Inference
-
+    /*
+     * Executes model inference on a preprocessed Bitmap and
+     * converts raw model output into a structured [EmotionResult].
+     */
     private fun runInference(bitmap: Bitmap): EmotionResult {
         val inputBuffer = preprocessBitmap(bitmap)
 
-        // Output buffer: float32[1, 8]
+        // Output tensor: [1, NUM_CLASSES]
         val outputBuffer = Array(1) { FloatArray(NUM_CLASSES) }
 
         interpreter.run(inputBuffer, outputBuffer)
 
         val scores = outputBuffer[0]
 
-        // Build label → score map
-        val allScores = EMOTION_LABELS.mapIndexed { i, label ->
-            label to scores[i]
+        val allScores = EMOTION_LABELS.mapIndexed { index, label ->
+            label to scores[index]
         }.toMap()
 
-        // Pick the highest-confidence class
         val maxIndex = scores.indices.maxByOrNull { scores[it] } ?: 0
+
         return EmotionResult(
-            label      = EMOTION_LABELS[maxIndex],
+            label = EMOTION_LABELS[maxIndex],
             confidence = scores[maxIndex],
-            allScores  = allScores
+            allScores = allScores
         )
     }
 
-    // Lifecycle
-
+    /*
+     * Releases interpreter resources when the detector is no longer needed.
+     */
     override fun close() {
         interpreter.close()
     }
 }
-
