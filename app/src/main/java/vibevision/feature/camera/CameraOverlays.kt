@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 
-/*
+/* Joshua Leisman
  * Composables and helpers that render on top of the camera preview.
  *
  * EmotionOverlay  - displays the current emotion label and confidence score
@@ -28,7 +28,7 @@ fun EmotionOverlay(
         )
         // "%.1f" formats confidence to one decimal place (e.g. 83.4%)
         Text(
-            text = "Confidence: ${"%.1f".format(confidence)}%",
+            text = "Confidence: ${"%.2f".format(confidence * 100F)}%",
             color = Color(0xFF00FF00),
             fontFamily = FontFamily.Monospace
         )

@@ -27,32 +27,33 @@ import com.vibevision.ui.theme.DarkPrimary
 import com.vibevision.ui.theme.HackerColor
 import kotlinx.coroutines.launch
 
-/*
- * Two-page onboarding flow shown on first launch.
+/* Joshua Leisman
+ * Two-page onboarding flow shown on first app launch.
  *
- * Page 0 - Welcome and app description
- * Page 1 - Privacy explainer and camera permission request
+ * Page 0: App introduction and value proposition
+ * Page 1: Privacy explanation and camera permission request
  *
- * Calls onPermissionResult with the system dialog result.
- * The caller is responsible for deciding what to show next.
+ * This screen does not decide navigation after onboarding.
+ * It reports the camera permission result to the caller.
  */
 
-// Defined once here so both rememberPagerState and PageIndicator stay in sync
+// Total number of onboarding pages
 private const val PAGE_COUNT = 2
 
 @Composable
 fun OnboardingScreen(
     onPermissionResult: (granted: Boolean) -> Unit
 ) {
+    // Pager state shared between the pager and page indicator
     val pagerState = rememberPagerState(pageCount = { PAGE_COUNT })
 
-    // Required to call pagerState.animateScrollToPage from inside a click handler,
-    // since animateScrollToPage is a suspend function
+    // Coroutine scope required for animated page scrolling
     val scope = rememberCoroutineScope()
 
-    // Launches the system camera permission dialog. The result is forwarded
-    // directly to the caller via onPermissionResult — this screen does not
-    // decide what happens next
+    /*
+     * Activity result launcher for requesting camera permission.
+     * The permission result is forwarded to the caller.
+     */
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -64,8 +65,10 @@ fun OnboardingScreen(
             .fillMaxSize()
             .background(DarkPrimary)
     ) {
-        // HorizontalPager renders one page at a time and supports swipe gestures.
-        // Each page index maps to a composable in the 'when' block below
+        /*
+         * Horizontal pager displaying onboarding pages.
+         * Each page index maps to a specific composable.
+         */
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize()
@@ -73,19 +76,25 @@ fun OnboardingScreen(
             when (page) {
                 0 -> WelcomePage(
                     onNext = {
-                        // Animate scroll rather than snap for a smoother page transition
-                        scope.launch { pagerState.animateScrollToPage(1) }
+                        /* Animate transition to the next page */
+                        scope.launch {
+                            pagerState.animateScrollToPage(1)
+                        }
                     }
                 )
                 1 -> PrivacyPage(
                     onEnableCamera = {
+                        /* Trigger system camera permission dialog */
                         launcher.launch(Manifest.permission.CAMERA)
                     }
                 )
             }
         }
 
-        // Overlaid on top of the pager, pinned to the bottom of the screen
+        /*
+         * Page indicator overlaid at the bottom of the screen.
+         * Reflects the currently visible onboarding page.
+         */
         PageIndicator(
             pageCount = PAGE_COUNT,
             currentPage = pagerState.currentPage,
@@ -96,12 +105,9 @@ fun OnboardingScreen(
     }
 }
 
-// Page 0 - Simple welcome screen with text
-
+// Page 0: Welcome and app description
 @Composable
 private fun WelcomePage(onNext: () -> Unit) {
-    // Center everything vertically so the content sits in the middle of the screen
-    // regardless of device height. Horizontal padding keeps text away from screen edges
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -109,10 +115,7 @@ private fun WelcomePage(onNext: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // App title split across two lines to create a bold visual anchor at the top
-        // of the page. Acts as a logo placeholder until a graphic asset is added.
-        // 48sp is large enough to dominate without overflowing on small screens.
-        // lineHeight = 52sp (just above fontSize) tightens the two lines together
+        // App title displayed prominently
         Text(
             text = "VIBE\nVISION",
             fontFamily = FontFamily.Monospace,
@@ -123,12 +126,9 @@ private fun WelcomePage(onNext: () -> Unit) {
             lineHeight = 52.sp
         )
 
-        // Larger gap here than between the two body texts below — separates the
-        // title visually from the supporting copy
         Spacer(Modifier.height(32.dp))
 
-        // Primary tagline — single sentence, brighter color (0xFFCCCCCC) so it
-        // reads as the first thing after the title
+        // Primary tagline
         Text(
             text = "Real-time emotion detection from your face.",
             fontFamily = FontFamily.Monospace,
@@ -137,12 +137,9 @@ private fun WelcomePage(onNext: () -> Unit) {
             textAlign = TextAlign.Center
         )
 
-        // Tighter gap here — the two body texts are related so they sit closer together
         Spacer(Modifier.height(12.dp))
 
-        // Secondary description at a smaller size and dimmer color (0xFF888888) to
-        // reinforce the hierarchy: title, then tagline, then supporting detail.
-        // lineHeight = 20sp gives the wrapped text enough breathing room to stay readable
+        // Supporting description explaining core behavior
         Text(
             text = "Point your front camera at yourself and watch " +
                     "the app classify your mood live — no account, " +
@@ -154,15 +151,17 @@ private fun WelcomePage(onNext: () -> Unit) {
             lineHeight = 20.sp
         )
 
-        // Larger gap before the button creates clear separation between content and CTA
         Spacer(Modifier.height(48.dp))
 
-        OnboardingButton(label = "Get Started", onClick = onNext)
+        // Button to advance to the privacy page
+        OnboardingButton(
+            label = "Get Started",
+            onClick = onNext
+        )
     }
 }
 
-// Page 1 - Privacy Page explaining why camera permission is needed
-
+// Page 1: Privacy explanation and permission request
 @Composable
 private fun PrivacyPage(onEnableCamera: () -> Unit) {
     Column(
@@ -172,8 +171,7 @@ private fun PrivacyPage(onEnableCamera: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Section heading at 24sp — smaller than the welcome title but still prominent.
-        // Same green as the title on page 0 keeps the two pages visually consistent
+        // Section heading
         Text(
             text = "Before we start",
             fontFamily = FontFamily.Monospace,
@@ -182,14 +180,12 @@ private fun PrivacyPage(onEnableCamera: () -> Unit) {
             color = HackerColor
         )
 
-        // Gap between heading and first card — slightly smaller than the 32dp gap on
-        // page 0 because the cards themselves provide visual weight below
         Spacer(Modifier.height(28.dp))
 
-        // Three cards covering camera use, data handling, and account policy.
-        // Order is intentional: what the app needs, what it does with it, what it does not do.
-        // Shown before the permission dialog so the user understands the reason
-        // for the request before Android displays it
+        /*
+         * Privacy explanation cards shown before requesting permission
+         * to give context for the system dialog.
+         */
         PrivacyCard(
             icon = "📷",
             title = "Camera access required",
@@ -202,7 +198,7 @@ private fun PrivacyPage(onEnableCamera: () -> Unit) {
             icon = "🔒",
             title = "Everything stays on-device",
             body = "Frames are processed locally and deleted immediately after analysis. " +
-                    "No images, no emotion data, nothing is ever uploaded or shared."
+                    "No images or emotion data are uploaded or shared."
         )
 
         Spacer(Modifier.height(12.dp))
@@ -210,22 +206,20 @@ private fun PrivacyPage(onEnableCamera: () -> Unit) {
         PrivacyCard(
             icon = "🚫",
             title = "No accounts. No tracking.",
-            body = "There is no sign-in, no analytics SDK, and no third-party data collection."
+            body = "There is no sign-in, analytics SDK, or third-party data collection."
         )
 
-        // Larger gap before the CTA — more space here than between cards to signal
-        // that the button is a distinct action rather than part of the card list
         Spacer(Modifier.height(40.dp))
 
-        // Tapping this triggers the system permission dialog.
-        // Android will only show the dialog if permission has not already been
-        // granted or permanently denied
-        OnboardingButton(label = "Enable Camera", onClick = onEnableCamera)
+        // Button that triggers the camera permission dialog
+        OnboardingButton(
+            label = "Enable Camera",
+            onClick = onEnableCamera
+        )
 
         Spacer(Modifier.height(12.dp))
 
-        // Small, dimmed text below the button — reassures hesitant users that
-        // they are not making a permanent decision by tapping Enable Camera
+        // Reassurance text for users hesitant to grant permission
         Text(
             text = "You can change this later in Android Settings.",
             fontFamily = FontFamily.Monospace,
@@ -236,8 +230,7 @@ private fun PrivacyPage(onEnableCamera: () -> Unit) {
     }
 }
 
-// Shared composables
-
+// Reusable card used to present privacy information */
 @Composable
 private fun PrivacyCard(icon: String, title: String, body: String) {
     Row(
@@ -246,8 +239,6 @@ private fun PrivacyCard(icon: String, title: String, body: String) {
             .clip(RoundedCornerShape(12.dp))
             .background(Color(0xFF1A1A1A))
             .padding(16.dp),
-        // Top-aligned so the icon sits next to the title rather than centering
-        // vertically when the body text wraps to multiple lines
         verticalAlignment = Alignment.Top
     ) {
         Text(text = icon, fontSize = 20.sp)
@@ -272,6 +263,7 @@ private fun PrivacyCard(icon: String, title: String, body: String) {
     }
 }
 
+// Reusable primary onboarding button */
 @Composable
 private fun OnboardingButton(label: String, onClick: () -> Unit) {
     Button(
@@ -280,7 +272,6 @@ private fun OnboardingButton(label: String, onClick: () -> Unit) {
             .fillMaxWidth()
             .height(52.dp),
         shape = RoundedCornerShape(12.dp),
-        // Green on near-black matches the app's monochrome palette
         colors = ButtonDefaults.buttonColors(
             containerColor = HackerColor,
             contentColor = Color(0xFF0A0A0A)
@@ -295,21 +286,25 @@ private fun OnboardingButton(label: String, onClick: () -> Unit) {
     }
 }
 
+// Row of animated dots indicating the current onboarding page */
 @Composable
-private fun PageIndicator(pageCount: Int, currentPage: Int, modifier: Modifier = Modifier) {
+private fun PageIndicator(
+    pageCount: Int,
+    currentPage: Int,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         repeat(pageCount) { index ->
-            // Animate color when the active page changes rather than snapping instantly
             val color by animateColorAsState(
                 targetValue = if (index == currentPage) HackerColor else Color(0xFF333333),
                 animationSpec = tween(300),
                 label = "dot_color"
             )
-            // Active dot is slightly larger to reinforce which page is current
+
             Box(
                 modifier = Modifier
                     .size(if (index == currentPage) 10.dp else 7.dp)

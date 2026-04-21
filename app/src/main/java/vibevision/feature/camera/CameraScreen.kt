@@ -23,7 +23,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
-/*
+/* Joshua Leisman
  * Top-level screen that reflects the current camera permission state.
  * The initial permission request is handled by OnboardingScreen, not here.
  *

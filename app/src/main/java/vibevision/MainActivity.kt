@@ -11,7 +11,7 @@ import com.vibevision.onboarding.OnboardingScreen
 import com.vibevision.ui.theme.VibeVisionTheme
 import dagger.hilt.android.AndroidEntryPoint
 
-/*
+/* Joshua Leisman
  * Single-Activity entry point. A single `screen` state variable
  * drives which composable is visible — no NavHost required.
  *

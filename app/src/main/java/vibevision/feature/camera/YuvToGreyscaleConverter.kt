@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import androidx.camera.core.ImageProxy
 import androidx.core.graphics.createBitmap
 
-/*
+/* Joshua Leisman
  * Converts a CameraX YUV_420_888 frame into a grayscale ARGB_8888 Bitmap.
  *
  * This implementation uses only the Y (luma) plane, which already represents
