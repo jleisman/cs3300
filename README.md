@@ -8,11 +8,6 @@ This project an Android application that performs real‑time camera capture and
 to infer emotional state and confidence from a user’s face. The app presents a camera preview with
 live overlay showing detected emotion and confidence level.
 
-## Authors
-- Jared Abels
-- Syndeed Ayman
-- Lydia Easter
-- Joshua Leisman
 
 ## Tools Used:
 - Android Studio IDE
