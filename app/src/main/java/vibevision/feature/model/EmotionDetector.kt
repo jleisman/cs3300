@@ -51,10 +51,10 @@ class EmotionDetector(context: Context) : AutoCloseable {
          * The order must exactly match the training label order.
          */
         private val EMOTION_LABELS = listOf(
-            "Neutral",
+            "Angry",
             "Happy",
             "Sad",
-            "Anger",
+            "Neutral",
         )
     }
 
