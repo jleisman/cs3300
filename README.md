@@ -3,8 +3,6 @@ Team "CS is just our hobby"
 
 Intro to Software Engineering Group Project - Android App interface for ML mood model
 
-[//]: # (TODO: Finish and add ML bits and pieces)
-
 ## Project Statement
 This project an Android application that performs real‑time camera capture and on‑device image analysis
 to infer emotional state and confidence from a user’s face. The app presents a camera preview with
@@ -24,6 +22,7 @@ live overlay showing detected emotion and confidence level.
   - Python
 
 ## How to Run Application
+I suggest running on a computer unless you have an Android phone and have installed APKs on that phone before.
 ### On Computer
 1. Download Android Studio
    - Go to: https://developer.android.com/studio
@@ -100,7 +99,7 @@ live overlay showing detected emotion and confidence level.
 3. Download APK to phone
    - Download the APK directly on the phone OR transfer the APK via USB cable OR transfer via cloud storage (Drive, Dropbox, etc.)
 
-5. Install the APK
+4. Install the APK
    - Open a File Manager app
    - Navigate to the folder containing the APK
    - Tap the APK file
@@ -108,7 +107,7 @@ live overlay showing detected emotion and confidence level.
    - Tap Install
    - Wait for the installation to complete
 
-6. Verify Installation
+5. Verify Installation
    - Confirm the “App installed” message appears
    - Tap Open or find the app in the app drawer
    - Launch the app to ensure it starts correctly

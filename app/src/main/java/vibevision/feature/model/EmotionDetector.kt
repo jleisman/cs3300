@@ -35,7 +35,7 @@ class EmotionDetector(context: Context) : AutoCloseable {
      */
     companion object {
         // Name of the TFLite model stored in the assets directory
-        private const val MODEL_FILE = "model_2.tflite"
+        private const val MODEL_FILE = "CS3300-ML-Model.tflite"
 
         // Required width and height of input images
         private const val INPUT_SIZE = 128
