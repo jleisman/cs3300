@@ -17,13 +17,22 @@ Maintainer will:
 - add info to correct version
 - Add tag to commit
 
-[//]: # (This is the unreleased section. Put code changes that are currently in development here)
-## [Unreleased]
-### Added
+
+## [1.0.0] - 2026-04-21
+## Added
+- New ML model
+- Interface code module
+- Name of programmer in each file
+
 ### Changed
-### Fixed
+- Standardized permission denied screens
+- Moved from 4KB app alignment to 16 KB alignment through changing of TLfite to litert imports
+- Increased speed of sending bitmaps to ML
+
 ### Removed
-### Security
+- old icon pictures
+- old models
+- unused imports
 
 ## [0.2.0] - 2026-04-11
 ### Added
