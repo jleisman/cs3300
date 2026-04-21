@@ -23,16 +23,16 @@ Maintainer will:
 - New ML model
 - Interface code module
 - Name of programmer in each file
-
 ### Changed
 - Standardized permission denied screens
 - Moved from 4KB app alignment to 16 KB alignment through changing of TLfite to litert imports
 - Increased speed of sending bitmaps to ML
-
+- Interface takes bitmaps instead of files
 ### Removed
 - old icon pictures
 - old models
 - unused imports
+- saving of PNGs to phone
 
 ## [0.2.0] - 2026-04-11
 ### Added
