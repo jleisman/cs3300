@@ -17,6 +17,11 @@ Maintainer will:
 - add info to correct version
 - Add tag to commit
 
+## [1.0.2] - 2026-04-25
+## Added
+- ML Python Code
+- Final Presentation Documents
+
 ## [1.0.1] - 2026-04-21
 ## Changed
 - Interface labels updated to match ML labels
