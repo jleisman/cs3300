@@ -17,17 +17,26 @@ Maintainer will:
 - add info to correct version
 - Add tag to commit
 
+## [1.0.3] - 2026-04-27
+### Added
+- Legacy Python code
+- Added final presentation documents
+
+### Changed
+- Updated Readme
+- GitHub Repo set to Public
+
 ## [1.0.2] - 2026-04-25
-## Added
+### Added
 - ML Python Code
 - Final Presentation Documents
 
 ## [1.0.1] - 2026-04-21
-## Changed
+### Changed
 - Interface labels updated to match ML labels
 
 ## [1.0.0] - 2026-04-21
-## Added
+### Added
 - New ML model
 - Interface code module
 - Name of programmer in each file

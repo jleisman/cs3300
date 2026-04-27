@@ -78,6 +78,7 @@ Lab computers with Android Studio Installed can be found in EPC/COH Open Labs an
 
 ### On Android Phone
 1. Download APK from Releases
+    - Can be found on [GitHub Repo](https://github.com/jleisman/cs3300)
 
 2. Enable phone for APK content
    - **Android 8.0 (Oreo) and newer**
@@ -132,3 +133,4 @@ Lab computers with Android Studio Installed can be found in EPC/COH Open Labs an
 
     Python code (./)
     - ML model.py                       // Configures environment and model. Trains, evelautates and exports model
+    - Legacy ML code.py                 // Original ML model config. and training code.
