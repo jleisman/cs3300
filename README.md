@@ -18,6 +18,8 @@ live overlay showing detected emotion and confidence level.
 
 ## How to Run Application
 I suggest running on a computer unless you have an Android phone and have installed APKs on that phone before.
+
+Lab computers with Android Studio Installed can be found in EPC/COH Open Labs and COLU 209 (Macs Only)
 ### On Computer
 1. Download Android Studio
    - Go to: https://developer.android.com/studio
@@ -126,4 +128,7 @@ I suggest running on a computer unless you have an Android phone and have instal
     - MainActivity                      // Entry point to app. Decides to show onboarding or camera
 
     assets (./app/src/assets)
-    - model_2.tflite                    // ML model
+    - CS3300-ML-Model.tflite            // ML model compiled in tflite
+
+    Python code (./)
+    - ML model.py                       // Configures environment and model. Trains, evelautates and exports model

@@ -10,7 +10,7 @@ import org.junit.Assert.*
 
 /*
  * Instrumented test, which will execute on an Android device.
- *
+ * Instrumented tests were completed outside of code by teams
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 @RunWith(AndroidJUnit4::class)
